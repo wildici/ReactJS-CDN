@@ -17,10 +17,73 @@
 
     <script type="text/babel">
 
+        function SearchBar({ username, setUsername, onSearch }) {
+            return (
+                <div className="search-area">
+                    <input
+                        type="text"
+                        placeholder="Digite o nome de usuário"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="input"
+                        onKeyDown={e => {
+                            if (e.key === "Enter") onSearch();
+                        }}
+                    />
+                    <button
+                        className="btn"
+                        onClick={onSearch}
+                        onMouseOver={e => e.target.style.background = "rgb(220, 70, 0)"}
+                        onMouseOut={e => e.target.style.background = "rgba(255, 88, 0)"}
+                    >
+                        Buscar
+                    </button>
+                </div>
+            );
+        }
+
+        function Profile(props) {
+            if (!props.userData) return null;
+            return (
+                <div className="profile-area">
+                    <img
+                        src={props.userData.avatar_url}
+                        alt="Avatar"
+                        width="120"
+                        className="profile-photo"
+                    />
+                    <h3 style={{ margin: "0.5rem 0", fontSize: "1.4rem", color: "#333" }}>
+                        {props.userData.name || "Nome não disponível"}
+                    </h3>
+                    <p style={{ margin: "0.3rem 0", color: "#555" }}>
+                        {props.userData.bio}
+                    </p>
+                    <p style={{ margin: "0.3rem 0", color: "#555" }}>
+                        <strong>📍 Localização:</strong> {props.userData.location || "Não informado"}
+                    </p>
+                    <p style={{ margin: "0.3rem 0", color: "#555" }}>
+                        <strong>📦 Repositórios públicos:</strong> {props.userData.public_repos}
+                    </p>
+                </div>
+            );
+        }
+
         function App() {
             const [username, setUsername] = React.useState("");
             const [userData, setUserData] = React.useState(null);
             const [error, setError] = React.useState("");
+
+            // buscar sempre que o nome de usuário mudar:
+            React.useEffect(() => {
+                if (username && username.length >= 3) {
+                    handleSearch();
+                }
+            }, [username]);
+
+            // buscar um usuário padrão ao montar o componente:
+            // React.useEffect(() => {
+            //     setUsername("wildici");
+            // }, []);
 
             const handleSearch = async () => {
                 if (!username) return;
@@ -41,52 +104,9 @@
             return (
                 <div className="app">
                     <h2>🔍 Buscar usuário do Github</h2>
-                    <div className="search-area">
-                        <input
-                            type="text"
-                            placeholder="Digite o nome de usuário"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="input"
-                            onKeyDown={e => {
-                                if (e.key === "Enter") handleSearch();
-                            }}
-                        />
-                        <button
-                            onClick={handleSearch}
-                            className="btn"
-                            onMouseOver={e => e.target.style.background = "rgb(220, 70, 0)"}
-                            onMouseOut={e => e.target.style.background = "rgba(255, 88, 0)"}
-                        >
-                            Buscar
-                        </button>
-                    </div>
-
+                    <SearchBar username={username} setUsername={setUsername} onSearch={handleSearch} />
                     {error && <p style={{ color: "red" }}>{error}</p>}
-
-                    {userData && (
-                        <div className="profile-area">
-                            <img
-                                src={userData.avatar_url}
-                                alt="Avatar"
-                                width="120"
-                                className="profile-photo"
-                            />
-                            <h3 style={{ margin: "0.5rem 0", fontSize: "1.4rem", color: "#333" }}>
-                                {userData.name || "Nome não disponível"}
-                            </h3>
-                            <p style={{ margin: "0.3rem 0", color: "#555" }}>
-                                {userData.bio}
-                            </p>
-                            <p style={{ margin: "0.3rem 0", color: "#555" }}>
-                                <strong>📍 Localização:</strong> {userData.location || "Não informado"}
-                            </p>
-                            <p style={{ margin: "0.3rem 0", color: "#555" }}>
-                                <strong>📦 Repositórios públicos:</strong> {userData.public_repos}
-                            </p>
-                        </div>
-                    )}
-
+                    <Profile userData={userData} />
                 </div>
             );
         }
